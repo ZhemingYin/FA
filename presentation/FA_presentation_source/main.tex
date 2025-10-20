@@ -1,0 +1,829 @@
+% ISS presentation template
+%
+% Change history:
+% 24.06.2010    Jürgen Ruoff        Initial creation
+% 01.07.2010    Patrick Häcker      Generalization
+% 02.07.2010    Patrick Häcker      Adjustment
+% 15.11.2010    Patrick Häcker      Improvements
+% 20.05.2011    Patrick Häcker      Add presentation type
+% 06.01.2012	P. Hermannstädter 	Adapted to ISS, small mods
+% 15.07.2019 	A. Bartler			Minor fixes, 16:9 aspect ratio added 
+
+
+
+% Insert your name here
+\newcommand{\presenter}{Zheming Yin}
+\newcommand{\presentershort}{Zheming Yin}
+\newcommand{\presenteremail}{PRESENTERMAIL} 		% can be accessed using \presenteremail
+
+% Insert presentation title here
+\newcommand{\presentationtitle}{Ray tracing channel simulation for millimeter wave indoor localization system}
+\newcommand{\shortpresentationtitle}{Ray tracing channel simulation for millimeter wave indoor localization system}
+
+% Insert type of presentation here (or comment line), probably one of:
+% Mitarbeitervortrag, Bachelor-Arbeit, Master-Arbeit, Bachelor thesis, Master thesis
+\newcommand{\presentationtype}{Research thesis}
+
+% Insert presentation date here
+\newcommand{\presentationdate}{18.07.2024}
+
+% Define the language by uncommenting. If there is an error, try deleting temporary files (*.log, ...)
+%\newcommand{\lang}{ngerman}
+\newcommand{\lang}{english}
+
+% Uncomment the following line, if you want to create handouts (setting to false does not work!)
+%\newcommand{\handoutmode}{true}
+
+% Define aspect ratio to  16:9 or 4:3 by uncommenting
+%\newcommand{\aspectratio}{43}
+\newcommand{\aspectratio}{169}
+
+
+% Load beamer class using LSS style
+\input{presentation}
+
+\documentclass{beamer}
+\usepackage{setspace}
+\usepackage[sorting=none]{biblatex}
+\addbibresource{refs.bib}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=simple, labelsep=period}
+\newcounter{section}
+\setcounter{section}{0}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\usepackage{animate}
+
+
+% My commands:
+
+% -----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+\begin{document}
+\lstset{basicstyle=\small\ttfamily,xleftmargin=18pt,language=Python,
+        commentstyle=\color{green},showstringspaces=false,stringstyle=\color{magenta}\ttfamily}
+
+% -----------------------------------------------------------------------------
+% This is the title page
+\begin{frame}[t,plain]
+	\titlepage
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% Motivation slide
+\begin{frame}[t]{Motivation}
+	\begin{itemize}
+	    \item Millimeter wave indoor localization system based on active radar sensing of local passive reference points \cite{schlachter_indoor_2024}
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.28]{figures/thesis_plot.png}
+            	\caption{The conceptual view of the millimeter wave indoor localization system}
+            \end{figure}
+        \item Ray tracing channel simulation
+        \item Large and realistic environment
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[t]{Motivation}
+	\begin{itemize}
+	    \item Frequency-modulated continuous wave (FMCW) radar
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.3]{figures/FMCW_principle.png}
+            	\caption{The principle of the FMCW radar}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+% Goal slide
+\begin{frame}[t]{Goal}
+	\begin{itemize}
+	    \item The signal flow
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.3]{figures/signal_flow_pre.png}
+            	\caption{The view of the signal flow \cite{hafner_parameter_2021}}
+            \end{figure}
+        \item Range-Doppler (RD) map and constant false alarm rate (CFAR) detection
+	\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% This is the table of contents. You can insert a motivation before or after this slide.
+\begin{frame}
+	\ifthenelse{\equal{\lang}{ngerman}}{
+		\frametitle{Inhaltsverzeichnis}
+	}{
+		\frametitle{Table of Contents}
+	}
+	\tableofcontents
+\end{frame}
+
+% Add an extra slide at the beginning of each section while highlighting the current section
+% Use \section* to skip the slide once or comment the following to skip all overview slides.
+\AtBeginSection[]
+{
+	\begin{frame}<beamer>
+		\ifthenelse{\equal{\lang}{ngerman}}{
+			\frametitle{Inhaltsverzeichnis}
+		}{
+			\frametitle{Table of Contents}
+		}
+% 		\frametitle{\contentsname}
+		\tableofcontents[currentsection]
+	\end{frame}
+}
+
+%% =========
+\section{Modeling of the channel simulation}
+\subsection{Modeling of the room and raytracing}
+\setcounter{section}{1}
+\setcounter{figure}{0}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Blender}
+
+\begin{itemize}
+	\item Modeling of the reflectors
+    \vspace{1.0\baselineskip}
+    \begin{figure}
+        \centering
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \includegraphics[height=0.5\textheight]{figures/tri_reflector.png}
+            \caption{Trihedral corner reflector}
+        \end{minipage}
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \includegraphics[height=0.5\textheight]{figures/octa_reflector.png}
+            \caption{Octahedral reflector}
+        \end{minipage}
+    \end{figure}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[t]{Blender}
+
+\begin{itemize}
+	\item Modeling of the room model
+    \vspace{1.0\baselineskip}
+    \begin{figure}
+        \centering
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \includegraphics[height=0.7\textwidth]{figures/empty_room_without_ceiling.png}
+            \caption{Room model with reflectors}
+        \end{minipage}
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \includegraphics[height=0.7\textwidth]{figures/furniture_simple.png}
+            \caption{Room model with furniture \cite{blender_furniture}}
+        \end{minipage}
+    
+    \end{figure}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[t]{Raytracer}
+	\begin{itemize}
+        \item Setup of the raytracing (MaxNumreflections, MaxAbsolutePathLoss, Method, etc.)
+	    \item The shooting and bouncing ray (SBR) method
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.5]{figures/ray_tracing_sbr_method.png}
+            	\caption{The view of the SBR method \cite{ray_tracer_inputs}}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}[t]{Raytracing}
+	\begin{itemize}
+	    \item The view of raytracing in the empty room model and room model with furniture
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/empty_room_simulation_right.png}
+                    \caption{In empty room model}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/furniture_simulation_right.png}
+                    \caption{In room with furniture}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[t]{Raytracer}
+	\begin{itemize}
+	    \item The view of raytracing in the room model with reflectors and inside the reflector
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/reflector_simulation_right.png}
+                    \caption{In room with reflectors}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/reflections_inside_reflector.png}
+                    \caption{The view inside the reflector}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+\subsection{LOS rays between the reflectors and radar}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Line-of-sight (LOS) rays}
+    \begin{itemize}
+	    \item Setting the receivers at the positions of reflectors to obtain LOS rays
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/LOS_5_reflectors.png}
+                    \caption{LOS rays from five trihedral corner reflectors}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/LOS_more_reflectors.png}
+                    \caption{LOS rays from multiple octahedral reflectors}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[t]{Path loss (PL)}
+    \begin{equation}
+        \centering
+        PL = 10\cdot\log_{10}\left(\frac{G_{T}G_{R}\lambda^{2}\cdot\sigma}{(4\pi)^{3} r^{4}}\right) \cite{richards_principles_2010},
+        \label{path loss formula}
+    \end{equation}
+    where
+    \begin{itemize}
+        \item $G_T$ and $G_R$ are the gain values of transmitter and receiver respectively.
+        \item $\lambda$ is the wavelength of the ray.
+        \item $\sigma$ is the radar cross section.
+        \item $r$ represents the propagation distance of LOS rays.
+    \end{itemize}
+\end{frame}
+
+
+
+
+\subsection{Signal processing}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{The signal model}
+    \begin{equation}
+        \centering
+        x(n_s, n_p) = \sum_{m} A_m \exp \left( 2\pi j \left(\frac{2 B r_{m}}{T_c c} T_s n_s + \frac{2 f v_{m}}{c} T_p n_p \right) \right) + n(n_s, n_p)\,\mathrm{\cite{ouza_simple_2017}},
+    \end{equation}
+    where
+    \begin{itemize}
+        \item $x(n_s, n_p)$ is an element of a 2D matrix $\mathbf{X}$, i.e. baseband signal,
+        \item $n_s$ = 1...256 is the fast time samples,
+        \item $n_p$=1...32 is the slow time samples,
+        \item $m$ represents each ray in the channel simulation,
+        \item $A_m = \sqrt{P_T \cdot 10^{-PL_m / 10} \cdot R}$,
+        \item the first term for the delay and the second term for the Doppler effect,
+        \item $n(n_s, n_p)$ is the Gaussian noise $n \sim \mathcal{CN}(0, V_{noise})$.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[t]{Range-Doppler map}
+    \begin{itemize}
+        \item The view of 2D fast Fourier transform (FFT) and range-Doppler map
+         \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/2D_FFT.png}
+                    \caption{The view of 2D FFT \cite{kronauge_new_2014}}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/2r_furniture.png}
+                    \caption{Range-Doppler map}
+                \end{minipage}
+            \end{figure}
+    \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[t]{Constant false alarm rate (CFAR) detection}
+	\begin{itemize}
+        \item The CFAR plots for the empty room model and room model with reflectors
+         \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/2c_empty_pre.png}
+                    \caption{In the empty room}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/2c_reflectors_pre.png}
+                    \caption{In the room with reflectors}
+                \end{minipage}
+            \end{figure}
+    \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[t]{Constant false alarm rate (CFAR) detection}
+	\begin{itemize}
+        \item The CFAR plots for the room model with reflectors and with furniture
+         \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/2c_reflectors_pre.png}
+                    \caption{In the room with reflectors}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/2c_furniture_pre.png}
+                    \caption{In the room with furniture}
+                \end{minipage}
+            \end{figure}
+    \end{itemize}
+\end{frame}
+
+
+
+
+\section{Antenna radiation pattern}
+\subsection{Antenna designer}
+\setcounter{section}{2}
+\setcounter{figure}{0}
+% -----------------------------------------------------------------------------
+
+\begin{frame}[t]{Antenna designer}
+	\begin{itemize}
+	    \item "Optimization" function to obtain maximum gain value
+        \vspace{1.0\baselineskip}
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.5]{figures/max_gain.png}
+            	\caption{The view of the maximum gain}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[t]{Antenna designer}
+	\begin{itemize}
+	    \item The gain as $az=0^{\circ}$ between the first version and after tuning
+        \vspace{1.0\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.55\textwidth]{figures/antenna_gain_optimization.png}
+                    \caption{The gain of the first version}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.55\textwidth]{figures/antenna_gain_latest.png}
+                    \caption{The gain after tuning}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[t]{Antenna designer}
+	\begin{itemize}
+	    \item The view and radiation pattern of the final antenna
+        \vspace{1.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.6\textwidth]{figures/antenna_plot_latest.png}
+                    \caption{View of the final antenna}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.6\textwidth]{figures/radiation_pattern_latest.png}
+                    \caption{3D radiation pattern}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+\subsection{Results}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Results}
+	\begin{itemize}
+	    \item The constant false alarm rate (CFAR) plots about the radiation pattern
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/1c_empty.png}
+                    \caption{CFAR without radiation pattern}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/3c_beampattern.png}
+                    \caption{CFAR with radiation pattern}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[t]{Results}
+	\begin{itemize}
+	    \item The view of the asymmetric radiation pattern in the room
+        \vspace{1.0\baselineskip}
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.17]{figures/asymmetric_antenna.png}
+            	\caption{The view of the asymmetric pattern}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+\section{Reflector radar cross section}
+\subsection{Radar cross section}
+\setcounter{section}{3}
+\setcounter{figure}{0}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Radar cross section (RCS)}
+	\begin{itemize}
+	    \item View of the RCS for the tetrahedral object with default parameters
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/mesh_tetrahedral.png}
+                    \caption{Mesh of the tetrahedral object}
+                \end{minipage}
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/rcs_tetrahedral.png}
+                    \caption{2D RCS of the tetrahedral object}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}[t]{Radar cross section (RCS)}
+	\begin{itemize}
+	    \item View of the RCS for the tetrahedral object with scaled parameters
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/rcs_tetrahedral.png}
+                    \caption{2D RCS without scaling}
+                \end{minipage}
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/rcs_tetrahedral_scaled.png}
+                    \caption{2D RCS with scaling}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}[t]{Radar cross section (RCS)}
+	\begin{itemize}
+	    \item View of the RCS for the trihedral corner reflector
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/mesh_cr.png}
+                    \caption{Mesh of trihedral corner reflector}
+                \end{minipage}
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/rcs_cr.png}
+                    \caption{2D RCS of trihedral reflector}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[t]{Radar cross section (RCS)}
+	\begin{itemize}
+	    \item 3D RCS views for both reflectors
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/trihe_3d_rcs.png}
+                    \caption{3D RCS of trihedral reflector}
+                \end{minipage}
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/octa_3d_rcs.png}
+                    \caption{3D RCS of octahedral reflector}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\subsection{Results}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Results}
+	\begin{itemize}
+	    \item The CFAR plots about the RCS pattern
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/3c_beampattern.png}
+                    \caption{With isotropic RCS pattern}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/4c_empty.png}
+                    \caption{With anisotropic RCS pattern}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+\section{Motion of the robot}
+\subsection{Trajectory generation}
+\setcounter{section}{4}
+\setcounter{figure}{0}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Trajectory generation}
+	\begin{itemize}
+	    \item The trajectory generation for the robot along the wall and furniture
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+            	\centering
+            	\includegraphics[scale=.18]{figures/trajectory.png}
+            	\caption{The trajectory of the robot}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\subsection{Orientation}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Orientation}
+	\begin{itemize}
+	    \item The orientation of the antenna during motion
+        \vspace{1.0\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/original_pattern.png}
+                    \caption{Radiation pattern before rotation}
+                \end{minipage}
+                \begin{minipage}{0.47\textwidth}
+                    \centering
+                    \includegraphics[height=0.7\textwidth]{figures/orientated_pattern.png}
+                    \caption{Radiation pattern after rotation}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\section{Evaluation}
+\setcounter{section}{5}
+\setcounter{figure}{0}
+% -----------------------------------------------------------------------------
+
+\begin{frame}[t]{Evaluation}
+	\begin{itemize}
+	    \item The CFAR plots difference in units watt (W) and decibel watt (dBW)
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/1c_empty.png}
+                    \caption{CFAR plot in unit W}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/1c_empty_dBW.png}
+                    \caption{CFAR plot in unit dBW}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}[t]{Evaluation}
+	\begin{itemize}
+	    \item The CFAR plots with various positions and amount of reflectors in unit W
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/4c_empty.png}
+                    \caption{CFAR plots with five trihedral corner reflectors}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/5c_octahedral.png}
+                    \caption{CFAR plots with multiple octahedral reflectors}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}[t]{Evaluation}
+	\begin{itemize}
+	    \item The meaning of the unit in the case of the multiple reflectors
+        \vspace{0.5\baselineskip}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/5c_octahedral.png}
+                    \caption{CFAR plots in the unit W}
+                \end{minipage}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \includegraphics[height=0.8\textwidth]{figures/5c_octahedral_dBW.png}
+                    \caption{CFAR plots in the unit dBW}
+                \end{minipage}
+            \end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+% \begin{frame}[t]{Evaluation}
+% 	\begin{itemize}
+% 	    \item The CFAR plots with different maximum number of reflections
+%         \vspace{0.5\baselineskip}
+%             \begin{figure}
+%                 \centering
+%                 \begin{minipage}{0.45\textwidth}
+%                     \centering
+%                     \includegraphics[height=0.8\textwidth]{figures/4c_rcs.png}
+%                     \caption{Max four reflections}
+%                 \end{minipage}
+%                 \begin{minipage}{0.45\textwidth}
+%                     \centering
+%                     \includegraphics[height=0.8\textwidth]{figures/8c_reflection.png}
+%                     \caption{Max two reflections}
+%                 \end{minipage}
+%             \end{figure}
+% 	\end{itemize}
+% \end{frame}
+
+
+
+
+\begin{frame}[t]{Evaluation}
+	\begin{itemize}
+	    \item The CFAR plots along the trajectory generated in GIF format
+        \vspace{0.5\baselineskip}
+	\end{itemize}
+    \centering
+    \begin{figure}
+        \centering
+        \animategraphics[width=0.5\linewidth, autoplay=True]{2}{cfar_png/}{1}{54}
+        \caption{CFAR plots along the trajectory}
+    \end{figure}
+\end{frame}
+
+
+
+
+\section{Summary and outlook}
+% -----------------------------------------------------------------------------
+\begin{frame}[t]{Summary and outlook}
+	\begin{itemize}
+	    \item Summary: The ray tracing channel model works well and meets the goal.
+        \vspace{0.5\baselineskip}
+        \item Outlook:
+        \vspace{0.5\baselineskip}
+        \begin{itemize}
+            \item Ray tracing with the surface diffraction
+            \vspace{0.5\baselineskip}
+            \item Antenna designer
+            \vspace{0.5\baselineskip}
+            \item RCS pattern simulation without scaling
+            \vspace{0.5\baselineskip}
+            \item Parallelizable computation of the simulation on GPU
+            \vspace{0.5\baselineskip}
+            \item Optimization of the number and arrangement of the reflectors
+            \vspace{0.5\baselineskip}
+            \item Combining with the deep learning for indoor localization system
+        \end{itemize}
+        
+	\end{itemize}
+\end{frame}
+
+
+
+% -----------------------------------------------------------------------------
+% Reference slide
+\renewcommand*{\bibfont}{\scriptsize}
+\begin{frame}[t]{Reference}
+	\ifthenelse{\equal{\doclang}{german}}{
+    	\bibliographystyle{IEEEtran_ISSger}
+    }{
+    	\bibliographystyle{IEEEtran_ISS}
+    }
+    \printbibliography{}
+\end{frame}
+
+
+
+
+% -----------------------------------------------------------------------------
+\begin{frame}[t]
+    \centering
+    \fontsize{30}{120}\selectfont
+	\textbf{Thank you for your attention}
+\end{frame}
+
+% -----------------------------------------------------------------------------
+
+
+\end{document}
